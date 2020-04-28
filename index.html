@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mine Sweeper</title>
+  <link rel="stylesheet" type="text/css" href="css/styles.css">
+  <script src="libs/lodash-4.17.15.min.js"></script>
+  <script src="libs/jquery-3.5.0.min.js"></script>
+  <script src="js/memory.js"></script>
+  <script src="js/game.js"></script>
+</head>
+
+<!-- BODY -->
+<body>
+  <div class="game-title">Memory game</div>
+  <div class="container-wrapper">
+    <div class="info-container">
+      <div class="info-element">
+        <span><strong>Parejas encontradas</strong>:</span>
+        <span id="pairsCompleted">0</span> / <span id="pairsRemaining">0</span>
+      </div>
+      <div class="info-element info-element-center">
+        <span id="victory"><strong>¡COMPLETADO!</strong></span>
+      </div>
+      <div class="info-element info-element-right">
+        <span><strong>Intentos</strong>:</span>
+        <span id="numAttemps">0</span>
+      </div>
+    </div>
+    <div id="gameContainer" oncontextmenu="return false;">
+
+      <!-- card structure -->
+      <div class="memory-card">
+        <div class="card-inner">
+          <div class="card-front"></div>
+          <div class="card-back">
+            <span class="card-back-value"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
