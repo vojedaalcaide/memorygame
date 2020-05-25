@@ -1,15 +1,28 @@
 const PAIRS_NUMBER = 12;
 const TIME_CHECKING_CARDS = 1250;
 
+const DEFAULT_USER_PLAYER = 'Anónimo'
+
+// Elements ID
 const ID_GAME_CONTAINER = 'gameContainer';
 const ID_INFO_PAIRS_COMPETED = 'pairsCompleted';
 const ID_INFO_PAIRS_REMAINING = 'pairsRemaining';
 const ID_INFO_NUM_ATTEMPTS = 'numAttemps';
 const ID_VICTORY = 'victory';
+const ID_PLAYER_SELECT = 'playerSelect';
+const ID_NEW_PLAYER_BUTTON = 'newPlayerBtn';
+const ID_ADD_PLAYER_CONTAINER = 'addPlayerContainer';
+const ID_NEW_PLAYER_NAME = 'newPlayerName';
+const ID_ADD_PLAYER_OK_BUTTON = 'addPlayerOkBtn';
+const ID_ADD_PLAYER_CANCEL_BUTTON = 'addPlayerCancelBtn';
 
+// CSS classes
 const CLASS_CARD_FLIPPED = 'flipped';
 const CLASS_CARD = 'memory-card';
 const CLASS_CARD_PAIRED = 'paired';
+
+// LocalStorage keys
+const LOCALSTORAGE_PLAYERS = 'players';
 
 var memory = null; // instance of Memory
 
@@ -30,10 +43,84 @@ var remainingPairs = 0;
 // flag to know when the game has finished and user has won
 var win = false;
 
+// players data
+var playersData = {};
+
 // main execution when document loads
 $(document).ready(function () {
+  chargePlayers();
+  // setPlayersListeners();
   resetGame();
 });
+
+function chargePlayers() {
+  const _playersData = getPlayersInfo();
+  /* PlayersInfo comes this format:
+  {
+    lastPlayer: string,
+    players: Array of:
+      { username: string, bestScore: number, totalScore: number, numGames: number }
+  }
+  */
+  if (!Array.isArray(_playersData.players) || _playersData.length === 0) {
+    _playersData.players = [];
+    _playersData.players.push({
+      username: DEFAULT_USER_PLAYER,
+      bestScore: 0,
+      totalScore: 0,
+      numGames: 0
+    });
+    _playersData.lastPlayer = DEFAULT_USER_PLAYER;
+  }
+  playersData = _playersData;
+}
+
+function setPlayersListeners() {
+  const $select = $('#' + ID_PLAYER_SELECT);
+  const $newPlayerBtn = $('#' + ID_NEW_PLAYER_BUTTON);
+  const $addPlayerOkBtn = $('#' + ID_ADD_PLAYER_OK_BUTTON);
+  const $addPlayerCancelBtn = $('#' + ID_ADD_PLAYER_CANCEL_BUTTON);
+  const $addPlayerName = $('#' + ID_NEW_PLAYER_NAME);
+  const $addPlayerContainer = $('#' + ID_ADD_PLAYER_CONTAINER);
+
+  $select.on('change', (ev) => {
+    playersData.lastPlayer = ev.target.value;
+    resetGame();
+  });
+
+  $newPlayerBtn.on('click', (ev) => {
+    $addPlayerContainer.show();
+    $addPlayerName[0].value = '';
+    $addPlayerName.focus();
+  });
+
+  $addPlayerOkBtn.on('click', (ev) => {
+    const newUsername = ($addPlayerName[0].value || '').trim();
+    if (newUsername.length) {
+      const usernamesList = playersData.players.map(pl => pl.username);
+      if (usernamesList.indexOf(newUsername) !== -1) {
+        alert('Este nombre de jugdor ya existe!');
+      } else {
+        addNewPlayer(newUsername);
+        resetGame();
+      }
+    }
+  });
+  $addPlayerCancelBtn.on('click', (ev) => {
+    $addPlayerContainer.hide();
+  });
+}
+
+function addNewPlayer(username) {
+  playersData.players.push({
+    username,
+    bestScore: 0,
+    totalScore: 0,
+    numGames: 0
+  });
+  playersData.lastPlayer = username;
+  savePlayersInfo(playersData);
+}
 
 function resetGame() {
   memory = null;
@@ -58,8 +145,26 @@ function resetGame() {
 }
 
 function resetUI() {
-  this.updateInfoPanel();
-  this.resetCards();
+  updateInfoPanel();
+  // updatePlayersPanel();
+  resetCards();
+}
+
+function updatePlayersPanel() {
+  const $playersSelect = $('#'+ ID_PLAYER_SELECT);
+  const usernamesList = playersData.players.map(pl => pl.username);
+
+  $playersSelect.empty();
+  usernamesList.forEach(user => $playersSelect.append(
+    '<option value="' + user + '">' + user + '</option>'
+  ));
+
+  if (!playersData.lastPlayer) {
+    playersData.lastPlayer = usernamesList[0];
+  }
+  $('option[value="' + playersData.lastPlayer + '"', $playersSelect).prop('selected', true);
+  
+  $('#' + ID_ADD_PLAYER_CONTAINER).hide();
 }
 
 function updateInfoPanel() {
@@ -141,7 +246,7 @@ async function onCardClick(ev) {
       updateInfoPanel(cardsFlipped);
     } else {
       await waitTime(TIME_CHECKING_CARDS/2);
-      unflipCards(cardsFlipped);
+      await unflipCards(cardsFlipped);
     }
     cardsFlipped = [];
   }
@@ -155,13 +260,12 @@ function lockCards(arrayIds) {
   });
 }
 
-function unflipCards(arrayIds) {
-  arrayIds.forEach(cardId => {
+async function unflipCards(arrayIds) {
+  arrayIds.forEach(async cardId => {
     const $cardEl = $('#card_' + cardId);
     $('.card-inner', $cardEl).removeClass(CLASS_CARD_FLIPPED);
-    setTimeout(() => {
-      $('.card-back-value', $cardEl)[0].innerText = '';
-    }, 300);
+    await waitTime(300);
+    $('.card-back-value', $cardEl)[0].innerText = '';
   });
 }
 
@@ -175,4 +279,13 @@ function onGameWin() {
   win = true;
   updateInfoPanel();
   console.log('Win!');
+}
+
+function getPlayersInfo() {
+  let playersInfo = window.localStorage.getItem(LOCALSTORAGE_PLAYERS) || '{}';
+  return JSON.parse(playersInfo);
+}
+
+function savePlayersInfo(playersInfo) {
+  window.localStorage.setItem(LOCALSTORAGE_PLAYERS, JSON.stringify(playersInfo));
 }

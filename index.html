@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Mine Sweeper</title>
+  <title>Memory game</title>
   <link rel="stylesheet" type="text/css" href="css/styles.css">
   <script src="libs/lodash-4.17.15.min.js"></script>
   <script src="libs/jquery-3.5.0.min.js"></script>
@@ -10,10 +10,26 @@
   <script src="js/game.js"></script>
 </head>
 
-<!-- BODY -->
 <body>
   <div class="game-title">Memory game</div>
   <div class="container-wrapper">
+
+    <!-- Users container -->
+    <!-- <div class="usersContainer">
+      <div><strong>Jugador</strong>:</div>
+      &nbsp;&nbsp;
+      <select id="playerSelect"></select>
+      &nbsp;&nbsp;
+      <button id="newPlayerBtn">Nuevo jugador</button>
+      &nbsp;&nbsp;
+      <div id="addPlayerContainer">
+        <input id="newPlayerName" />
+        <button id="addPlayerOkBtn">Ok</button>
+        <button id="addPlayerCancelBtn">Cancel</button>
+      </div>
+    </div> -->
+
+    <!-- Info container -->
     <div class="info-container">
       <div class="info-element">
         <span><strong>Parejas encontradas</strong>:</span>
@@ -27,6 +43,8 @@
         <span id="numAttemps">0</span>
       </div>
     </div>
+
+    <!-- Cards container -->
     <div id="gameContainer" oncontextmenu="return false;">
 
       <!-- card structure -->
